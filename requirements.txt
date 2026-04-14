@@ -1,0 +1,18 @@
+# ML / clustering
+numpy>=1.26.0
+scikit-learn>=1.4.0
+umap-learn>=0.5.6
+
+# Embeddings (pick one or both)
+sentence-transformers>=2.7.0   # SBERT — matches the paper exactly
+openai>=1.50.0                 # if you want text-embedding-3-small instead
+
+# LLM providers
+anthropic>=0.40.0              # eval judge
+# Qwen via Ollama uses the openai client pointed at localhost — no extra package
+
+# Hybrid retrieval
+rank-bm25>=0.2.2
+
+# Utilities
+python-dotenv>=1.0.0           # for API key management
