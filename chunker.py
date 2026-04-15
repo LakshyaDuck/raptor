@@ -43,7 +43,7 @@ def accumulate_sentences(sentences: list[str], size: int, overlap: int) -> list[
     return chunks
 
 
-def chunk_text(text: str, config: RaptorConfig, metadata: dict) -> list[Node]:
+def chunk_text(text: str, config: RaptorConfig, metadata: dict = {}) -> list[Node]:
     sentences = split_sentences(text, config.chunk_size)
     chunks = accumulate_sentences(sentences, config.chunk_size, config.chunk_overlap)
     nodes = []
