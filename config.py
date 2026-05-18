@@ -8,8 +8,9 @@ class RaptorConfig:
         # embedding
         self.embedding_model = "multi-qa-mpnet-base-cos-v1"
         self.embedding_batch_size = 32
+        self.embedding_dim = 768
 
-        # umap — two values, not one (paper correction)
+        # umap
         self.umap_n_neighbors_global = 50
         self.umap_n_neighbors_local = 10
         self.umap_n_components = 10
