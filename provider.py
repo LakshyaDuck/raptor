@@ -31,7 +31,7 @@ class LocalProvider(LLMProvider):
             messages=[{"role": "user", "content": prompt}],
         )
         out = response.choices[0].message.content
-        return out if out is str else ""
+        return out or ""
 
 
 class AnthropicProvider(LLMProvider):

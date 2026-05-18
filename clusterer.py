@@ -26,6 +26,9 @@ def cluster_nodes(nodes: list[Node], config: RaptorConfig) -> list[list[Node]]:
     if not nodes:
         return []
 
+    if len(nodes) == 1:
+        return [nodes]
+
     embeddings = np.array([node.embedding for node in nodes])
 
     # ===== FIRST PASS: GLOBAL =====

@@ -10,7 +10,10 @@ class Embedder:
 
     def embed_nodes(self, nodes: list[Node]) -> list[Node]:
 
-        embeddings = self.model.encode(node.text for node in nodes)
+        if not nodes:
+            return []
+        text = [node.text for node in nodes]
+        embeddings = self.model.encode(text)
 
         for i, node in enumerate(nodes):
             node.embedding = embeddings[i]

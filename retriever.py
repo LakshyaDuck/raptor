@@ -9,7 +9,6 @@ def collapsed_retrieval(
 ) -> list[Node]:
     nodes = tree.all_nodes()
     nodes = [n for n in nodes if n.embedding is not None]
-    assert config.embedding_dim == nodes[0].embedding.shape[0]
     embeddings = np.zeros((len(nodes), config.embedding_dim))
     for i, node in enumerate(nodes):
         embeddings[i] = node.embedding

@@ -22,7 +22,8 @@ class TreeBuilder:
         while True:
             clusters = cluster_nodes(current_nodes, self.config)
             if (
-                len(clusters) == 1
+                not clusters
+                or len(clusters) == 1
                 or len(clusters) == len(current_nodes)
                 or layer >= self.config.max_tree_layers
             ):
