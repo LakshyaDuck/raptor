@@ -30,7 +30,8 @@ class LocalProvider(LLMProvider):
             max_tokens=self.max_tokens,
             messages=[{"role": "user", "content": prompt}],
         )
-        return response.choices[0].message.content
+        out = response.choices[0].message.content
+        return out if out is str else ""
 
 
 class AnthropicProvider(LLMProvider):
