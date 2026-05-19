@@ -2,3 +2,5 @@ venv/
 decisions.md
 __pycache__/
 test_ingestion_pipeline.py
+.agents
+.codex
