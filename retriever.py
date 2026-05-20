@@ -6,10 +6,12 @@ from models import Node, RaptorTree
 
 def _all_collapsed_scores(query_embedding, tree, config):
     nodes = [n for n in tree.all_nodes() if n.embedding is not None]
+    if not nodes:
+        return []
     embeddings = np.array([n.embedding for n in nodes])
-    sims = np.dot(embeddings, query_embedding) / (
-        np.linalg.norm(embeddings, axis=1) * np.linalg.norm(query_embedding)
-    )
+    denominator = np.linalg.norm(embeddings, axis=1) * np.linalg.norm(query_embedding)
+    denominator = np.where(denominator == 0, 1e-10, denominator)
+    sims = np.dot(embeddings, query_embedding) / (denominator)
     return [(nodes[i], float(sims[i])) for i in range(len(nodes))]
 
 
@@ -20,9 +22,11 @@ def _all_traversal_scores(query_embedding, tree, config):
     layer = tree.depth
     while layer >= 0 and nodes:
         embeddings = np.array([n.embedding for n in nodes])
-        sims = np.dot(embeddings, query_embedding) / (
-            np.linalg.norm(embeddings, axis=1) * np.linalg.norm(query_embedding)
+        denominator = np.linalg.norm(embeddings, axis=1) * np.linalg.norm(
+            query_embedding
         )
+        denominator = np.where(denominator == 0, 1e-10, denominator)
+        sims = np.dot(embeddings, query_embedding) / (denominator)
         sorted_indices = np.argsort(sims)[::-1]
         top_indices = sorted_indices[: config.gmm_max_components]
         for i in top_indices:
@@ -51,12 +55,12 @@ def collapsed_retrieval(
 ) -> list[Node]:
     nodes = tree.all_nodes()
     nodes = [n for n in nodes if n.embedding is not None]
-    embeddings = np.zeros((len(nodes), config.embedding_dim))
-    for i, node in enumerate(nodes):
-        embeddings[i] = node.embedding
-    similarities = np.dot(embeddings, query_embedding) / (
-        np.linalg.norm(embeddings, axis=1) * np.linalg.norm(query_embedding)
-    )
+    if not nodes:
+        return []
+    embeddings = np.array([node.embedding for node in nodes])
+    denominator = np.linalg.norm(embeddings, axis=1) * np.linalg.norm(query_embedding)
+    denominator = np.where(denominator == 0, 1e-10, denominator)
+    similarities = np.dot(embeddings, query_embedding) / (denominator)
 
     sorted_indices = np.argsort(similarities)[::-1]
     length = 0
@@ -72,32 +76,36 @@ def collapsed_retrieval(
 def tree_traverse(
     query_embedding, tree: RaptorTree, config: RaptorConfig
 ) -> list[Node]:
-    reversed = []
+    retrieved = []
     nodes = tree.nodes_at(tree.depth)
+    if not nodes:
+        return []
     idtonode = {node.node_id: node for node in tree.all_nodes()}
-    similarities = np.dot(
-        np.array([node.embedding for node in nodes]), query_embedding
-    ) / (
-        np.linalg.norm(np.array([node.embedding for node in nodes]), axis=1)
-        * np.linalg.norm(query_embedding)
-    )
+    embeddings = np.array([node.embedding for node in nodes])
+    denominator = np.linalg.norm(embeddings, axis=1) * np.linalg.norm(query_embedding)
+    denominator = np.where(denominator == 0, 1e-10, denominator)
+    similarities = np.dot(embeddings, query_embedding) / denominator
     sorted_indices = np.argsort(similarities)[::-1]
-    reversed.extend([nodes[i] for i in sorted_indices[: config.gmm_max_components]])
+    reversed_indices = sorted_indices[: config.gmm_max_components]
+    retrieved.extend([nodes[i] for i in reversed_indices])
     layer = tree.depth - 1
     while layer >= 0:
         new_nodes = []
-        for i in sorted_indices:
+        for i in reversed_indices:
             node = idtonode[nodes[i].node_id]
             for id in node.children_ids:
                 new_nodes.append(idtonode[id])
         nodes = new_nodes
-        similarities = np.dot(
-            np.array([node.embedding for node in nodes]), query_embedding
-        ) / (
-            np.linalg.norm(np.array([node.embedding for node in nodes]), axis=1)
-            * np.linalg.norm(query_embedding)
+        if not nodes:
+            break
+        embeddings = np.array([node.embedding for node in nodes])
+        denominator = np.linalg.norm(embeddings, axis=1) * np.linalg.norm(
+            query_embedding
         )
+        denominator = np.where(denominator == 0, 1e-10, denominator)
+        similarities = np.dot(embeddings, query_embedding) / denominator
         sorted_indices = np.argsort(similarities)[::-1]
-        reversed.extend([nodes[i] for i in sorted_indices[: config.gmm_max_components]])
+        reversed_indices = sorted_indices[: config.gmm_max_components]
+        retrieved.extend([nodes[i] for i in reversed_indices])
         layer -= 1
-    return reversed
+    return retrieved

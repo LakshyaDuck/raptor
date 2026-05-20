@@ -4,3 +4,7 @@ __pycache__/
 test_ingestion_pipeline.py
 .agents
 .codex
+.env
+.gradio
+saved_trees
+tests

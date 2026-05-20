@@ -57,7 +57,8 @@ def cluster_nodes(nodes: list[Node], config: RaptorConfig) -> list[list[Node]]:
             continue
 
         if len(cluster_nodes_list) == 1:
-            clusters.append(cluster_nodes_list)
+            if config.min_cluster_size <= 1:
+                clusters.append(cluster_nodes_list)
             continue
 
         # Local UMAP on this global cluster's nodes

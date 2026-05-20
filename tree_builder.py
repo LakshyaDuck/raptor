@@ -17,17 +17,28 @@ class TreeBuilder:
         self.tree = RaptorTree()
         for node in leaf_nodes:
             self.tree.add_node(node)
+
         current_nodes = leaf_nodes
         layer = 0
+
         while True:
+            # Step 1: Try to cluster
             clusters = cluster_nodes(current_nodes, self.config)
+
+            # Step 2: Check if clustering was effective
+            # If no clustering happened, stop
             if (
                 not clusters
                 or len(clusters) == 1
-                or len(clusters) == len(current_nodes)
+                or len(clusters)
+                == len(
+                    current_nodes
+                )  # Clustering failed (each node is its own cluster)
                 or layer >= self.config.max_tree_layers
             ):
-                break
+                break  # ← Exit AFTER failed clustering, before creating nodes
+
+            # Step 3: Clustering worked, create parent nodes
             nodes = []
             for cluster in clusters:
                 summary_text = self.summarizer.summarize(cluster)
@@ -39,9 +50,16 @@ class TreeBuilder:
                     metadata={},
                 )
                 nodes.append(node)
+
+            # Step 4: Embed the NEW parent nodes
             self.embedder.embed_nodes(nodes)
+
+            # Step 5: Add them to tree
             for node in nodes:
                 self.tree.add_node(node)
+
+            # Step 6: Set up for next iteration
             current_nodes = nodes
             layer += 1
+
         return self.tree

@@ -12,14 +12,14 @@ from tree_builder import TreeBuilder
 class Raptor:
     def __init__(
         self,
-        config: RaptorConfig,
-        embedder: Embedder,
-        summarizer: Summarizer,
-        tree_builder: TreeBuilder,
-        query_router: QueryRouter,
-        eval_pipeline: EvalPipeline,
-        provider: LocalProvider,
-        eval_provider: AnthropicProvider,
+        config,
+        embedder,
+        summarizer,
+        tree_builder,
+        query_router,
+        eval_pipeline,
+        local_provider,
+        anthropic_provider,
     ):
         self.config = config
         self.embedder = embedder
@@ -27,19 +27,18 @@ class Raptor:
         self.tree_builder = tree_builder
         self.query_router = query_router
         self.eval_pipeline = eval_pipeline
-        self.provider = provider
-        self.eval_provider = eval_provider
+        self.local_provider = local_provider
+        self.anthropic_provider = anthropic_provider
+        self.tree: RaptorTree | None = None
 
     def ingest(self, document: list[str]):
         text = " ".join(document)
-        chunks = chunk_text(text, self.config)
-        nodes = []
-        for chunk in chunks:
-            nodes.append(
-                Node(text=chunk, layer=0, children_ids=[], embedding=None, metadata={})
-            )
+        nodes = chunk_text(text, self.config)
         nodes = self.embedder.embed_nodes(nodes)
         self.tree = self.tree_builder.build_tree(nodes)
+        print(len(self.tree.all_nodes()))
+        print(self.tree.depth)
+        print(len(self.tree.nodes_at(self.tree.depth)))
 
     def query(self, query: str):
         if not self.tree:

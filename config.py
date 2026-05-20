@@ -1,3 +1,8 @@
+from dotenv import load_dotenv
+
+load_dotenv()
+
+
 class RaptorConfig:
     def __init__(self):
 
@@ -7,6 +12,8 @@ class RaptorConfig:
 
         # embedding
         self.embedding_model = "multi-qa-mpnet-base-cos-v1"
+        self.embedding_device = "cpu"
+        self.embedding_local_files_only = True
         self.embedding_batch_size = 32
         self.embedding_dim = 768
 
@@ -20,7 +27,7 @@ class RaptorConfig:
         self.gmm_soft_threshold = 0.1
 
         # summarization
-        self.summarization_model = "qwen3.5:9b"
+        self.summarization_model = "hermes3:8b"
         self.max_tokens_per_cluster = 3500
         self.summary_max_tokens = 256
 
